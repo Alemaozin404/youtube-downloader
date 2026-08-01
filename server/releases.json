@@ -1,4 +1,22 @@
 {
   "app": "YouTube Downloader",
-  "releases": []
+  "releases": [
+    {
+      "version": "1.1.0",
+      "min_required_version": "1.0",
+      "published_at": "2026-08-01T14:45:45.603970+00:00",
+      "notes": "Primeira versao publica do YouTube Downloader",
+      "release_page": "https://github.com/Alemaozin404/youtube-downloader/releases/tag/v1.1.0",
+      "mandatory": false,
+      "platforms": {
+        "windows": {
+          "url": "https://github.com/Alemaozin404/youtube-downloader/releases/download/v1.1.0/YouTube-Downloader-Setup-1.1.0.exe",
+          "sha256": "47b26bf1b8da00221937ffda92b1ee077fef73946fe19a2949393442aecad884",
+          "size": 0,
+          "filename": "YouTube-Downloader-Setup-1.1.0.exe",
+          "signature": "KQmhf83lyw7OKgE2WhHmFbKPvnwdjuD9t8riwMSvm4hoGymg6WhGdjehJijxm/C+Lk59eAOgSSBEtTil+W2oCQ=="
+        }
+      }
+    }
+  ]
 }
