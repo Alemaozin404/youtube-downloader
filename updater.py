@@ -142,8 +142,24 @@ def baixar_instalador(
     reporthook: Optional[Callable[[int, int, int], None]] = None,
     timeout: int = _TIMEOUT_PADRAO,
 ) -> str:
-    """Baixa o arquivo para `destino`. reporthook(count, block_size, total)."""
-    urllib.request.urlretrieve(url, destino, reporthook=reporthook)
+    """Baixa o arquivo para `destino`. reporthook(count, block_size, total).
+
+    Usa urlopen com timeout (urlretrieve nao aceita timeout e pode travar).
+    """
+    req = urllib.request.Request(url, headers={"User-Agent": "YouTube-Downloader-Updater"})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        total = int(resp.headers.get("Content-Length", 0))
+        bloco = 8192
+        count = 0
+        with open(destino, "wb") as f:
+            while True:
+                dados = resp.read(bloco)
+                if not dados:
+                    break
+                f.write(dados)
+                count += 1
+                if reporthook:
+                    reporthook(count, bloco, total)
     return destino
 
 

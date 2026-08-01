@@ -10,6 +10,7 @@ import os
 import sys
 import tempfile
 import unittest
+import urllib.request
 from pathlib import Path
 from unittest import mock
 
@@ -150,21 +151,61 @@ class TestSha256(unittest.TestCase):
 
 
 class TestBaixarInstalador(unittest.TestCase):
-    """Testes de download com urlretrieve mockado."""
+    """Testes de download com urlopen mockado."""
 
     def test_download(self):
-        origem = Path(tempfile.gettempdir()) / "updater_teste_origem.txt"
         destino = Path(tempfile.gettempdir()) / "updater_teste_destino.txt"
-        origem.write_text("dados", encoding="utf-8")
+        destino.unlink(missing_ok=True)
+
+        class FakeResp:
+            headers = {"Content-Length": "5"}
+
+            def __init__(self):
+                self._chamadas = 0
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self, n=-1):
+                self._chamadas += 1
+                return b"dados" if self._chamadas == 1 else b""
+
         try:
-            url = origem.as_uri()
-            with mock.patch("urllib.request.urlretrieve") as m:
-                m.side_effect = lambda u, d, **kw: origem.replace(destino)
-                ret = baixar_instalador(url, str(destino))
+            with mock.patch("urllib.request.urlopen", return_value=FakeResp()) as m:
+                ret = baixar_instalador("https://exemplo.com/setup.exe", str(destino))
             self.assertEqual(ret, str(destino))
             self.assertTrue(destino.exists())
+            self.assertEqual(destino.read_text(encoding="utf-8"), "dados")
+            req = m.call_args[0][0]
+            self.assertIsInstance(req, urllib.request.Request)
         finally:
-            origem.unlink(missing_ok=True)
+            destino.unlink(missing_ok=True)
+
+    def test_download_timeout_passthrough(self):
+        """O timeout deve ser repassado ao urlopen (nao mais ignorado)."""
+        destino = Path(tempfile.gettempdir()) / "updater_teste_timeout.txt"
+        destino.unlink(missing_ok=True)
+
+        class FakeResp:
+            headers = {"Content-Length": "0"}
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self, n=-1):
+                return b""
+
+        try:
+            with mock.patch("urllib.request.urlopen", return_value=FakeResp()) as m:
+                baixar_instalador("https://exemplo.com/setup.exe", str(destino), timeout=42)
+            self.assertEqual(m.call_args[1]["timeout"], 42)
+        finally:
             destino.unlink(missing_ok=True)
 
 
