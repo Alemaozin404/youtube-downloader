@@ -5,10 +5,10 @@
 #define MyAppName "YouTube Downloader"
 
 ; Versao pode ser sobrescrita via linha de comando do ISCC:
-;   ISCC.exe /DMyAppVersion=1.1.0 installer.iss
+;   ISCC.exe /DMyAppVersion=1.2.0 installer.iss
 ; (usado pelo pipeline release.py). Sem o parametro, usa o padrao abaixo.
 #ifndef MyAppVersion
-  #define MyAppVersion "1.1.0"
+  #define MyAppVersion "1.2.0"
 #endif
 
 #define MyAppPublisher "Freebuff"
@@ -82,6 +82,10 @@ Source: "dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "YouTube Downloader.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "requirements.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "youtube_icon.ico"; DestDir: "{app}"; Flags: ignoreversion
+
+; Binarios ffmpeg (processamento de audio/video) - essenciais para mesclar e converter
+Source: "ffmpeg\ffmpeg.exe"; DestDir: "{app}\ffmpeg"; Flags: ignoreversion
+Source: "ffmpeg\ffprobe.exe"; DestDir: "{app}\ffmpeg"; Flags: ignoreversion
 
 ; Scripts Python (para usuarios que querem modificar ou rebuildar)
 Source: "yt-downloader-gui.py"; DestDir: "{app}\src"; Flags: ignoreversion

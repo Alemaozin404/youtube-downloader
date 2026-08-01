@@ -27,3 +27,7 @@ output.txt
 # Chave privada do sistema de atualizacoes (NUNCA commitar!)
 update_private.pem
 update_public.pem
+
+# Binarios do ffmpeg (baixados pelo build - ~200MB, nao versionar)
+ffmpeg/
+ffmpeg-essentials.zip

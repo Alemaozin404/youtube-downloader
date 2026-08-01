@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-YouTube Downloader GUI v1.1.0
+YouTube Downloader GUI v1.2.0
 Interface grafica para baixar videos e audios do YouTube.
 """
 

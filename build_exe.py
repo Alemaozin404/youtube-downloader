@@ -35,6 +35,26 @@ HIDDEN_IMPORTS = [
     "PIL._tkinter_finder",
 ]
 
+# Pasta com binarios do ffmpeg (ffmpeg.exe/ffprobe.exe) copiada para junto do exe
+FFMPEG_DIR = PROJECT_DIR / "ffmpeg"
+
+
+def copiar_ffmpeg_para_dist():
+    """Copia ffmpeg.exe/ffprobe.exe para dist/ffmpeg (usado em dev e pelo instalador)."""
+    if not FFMPEG_DIR.exists():
+        print("  [aviso] pasta ffmpeg/ nao encontrada; pulando copia do ffmpeg")
+        return
+    destino = DIST_DIR / "ffmpeg"
+    destino.mkdir(parents=True, exist_ok=True)
+    for nome in ("ffmpeg.exe", "ffprobe.exe"):
+        origem = FFMPEG_DIR / nome
+        if origem.exists():
+            shutil.copy2(origem, destino / nome)
+            print(f"  Copiado: {destino / nome}")
+        else:
+            print(f"  [aviso] {origem} nao encontrado")
+
+
 
 def obter_versao_pyinstaller() -> str:
     """Retorna a versao do PyInstaller instalado."""
@@ -173,6 +193,9 @@ def main():
         code = compilar_cli()
         if code != 0:
             sys.exit(code)
+
+    # Copia ffmpeg para junto do executavel (necessario para mesclar/converter)
+    copiar_ffmpeg_para_dist()
 
     print()
     print("  " + "=" * 50)

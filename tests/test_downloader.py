@@ -80,6 +80,10 @@ class TestMontarComandoDownload(unittest.TestCase):
         patcher = mock.patch("downloader.localizar_ytdlp", return_value=["yt-dlp"])
         patcher.start()
         self.addCleanup(patcher.stop)
+        # Sem ffmpeg empacotado por padrao (para nao adicionar --ffmpeg-location)
+        patcher2 = mock.patch("downloader.localizar_ffmpeg_dir", return_value=None)
+        patcher2.start()
+        self.addCleanup(patcher2.stop)
 
     def test_base(self):
         cmd = downloader.montar_comando_download("https://youtu.be/abc", "mp4")
@@ -206,12 +210,39 @@ class TestLocalizarYtdlp(unittest.TestCase):
             self.assertFalse(downloader.verificar_ytdlp())
 
     def test_verificar_ffmpeg_true(self):
-        with mock.patch("downloader.shutil.which", return_value="C:/ffmpeg.exe"):
+        with mock.patch("downloader.localizar_ffmpeg_dir", return_value=None), \
+             mock.patch("downloader.shutil.which", return_value="C:/ffmpeg.exe"):
             self.assertTrue(downloader.verificar_ffmpeg())
 
     def test_verificar_ffmpeg_false(self):
-        with mock.patch("downloader.shutil.which", return_value=None):
+        with mock.patch("downloader.localizar_ffmpeg_dir", return_value=None), \
+             mock.patch("downloader.shutil.which", return_value=None):
             self.assertFalse(downloader.verificar_ffmpeg())
+
+    def test_verificar_ffmpeg_true_empacotado(self):
+        # ffmpeg empacotado junto ao app (instalador/dist) mesmo sem PATH
+        with mock.patch("downloader.localizar_ffmpeg_dir",
+                        return_value=Path("C:/app/ffmpeg")), \
+             mock.patch("downloader.shutil.which", return_value=None):
+            self.assertTrue(downloader.verificar_ffmpeg())
+
+    def test_localizar_ffmpeg_dir_sem_pasta(self):
+        with mock.patch("downloader.Path.is_file", return_value=False):
+            self.assertIsNone(downloader.localizar_ffmpeg_dir())
+
+    def test_ffmpeg_location_no_comando_quando_empacotado(self):
+        # Sem ffmpeg empacotado: comando NAO tem --ffmpeg-location
+        with mock.patch("downloader.localizar_ffmpeg_dir", return_value=None):
+            cmd = downloader.montar_comando_download("https://youtu.be/abc", "mp4")
+        self.assertNotIn("--ffmpeg-location", cmd)
+
+        # Com ffmpeg empacotado: comando aponta para a pasta
+        pasta = Path("C:/app/ffmpeg")
+        with mock.patch("downloader.localizar_ffmpeg_dir", return_value=pasta):
+            cmd = downloader.montar_comando_download("https://youtu.be/abc", "mp4")
+        idx = cmd.index("--ffmpeg-location")
+        # str(Path) normaliza as barras (Windows -> barra invertida)
+        self.assertEqual(cmd[idx + 1], str(pasta))
 
 
 # ─── obter_info_video ────────────────────────────────────────────────────────

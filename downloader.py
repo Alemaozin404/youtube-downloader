@@ -80,8 +80,35 @@ def verificar_ytdlp() -> bool:
     return bool(localizar_ytdlp())
 
 
+def localizar_ffmpeg_dir() -> Optional[Path]:
+    """
+    Retorna o diretorio que contem ffmpeg.exe/ffprobe.exe empacotados, ou None.
+
+    Prioridade:
+      1. Pasta 'ffmpeg' junto ao executavel (instalador/{app}/ffmpeg, dist/ffmpeg)
+      2. Pasta 'ffmpeg' na raiz do projeto (execucao como script)
+
+    Retorna None se o ffmpeg estiver apenas no PATH do sistema (nao precisa
+    de --ffmpeg-location) ou ausente.
+    """
+    candidatos: List[Path] = []
+
+    if getattr(sys, "frozen", False):
+        candidatos.append(Path(sys.executable).parent / "ffmpeg")
+        candidatos.append(Path(sys.executable).parent)
+    else:
+        candidatos.append(Path(__file__).parent / "ffmpeg")
+
+    for d in candidatos:
+        if (d / "ffmpeg.exe").is_file() and (d / "ffprobe.exe").is_file():
+            return d
+    return None
+
+
 def verificar_ffmpeg() -> bool:
-    """Retorna True se o ffmpeg estiver disponivel no PATH."""
+    """Retorna True se o ffmpeg estiver disponivel (empacotado ou no PATH)."""
+    if localizar_ffmpeg_dir():
+        return True
     return shutil.which("ffmpeg") is not None
 
 
@@ -147,6 +174,11 @@ def montar_comando_download(
         "--no-playlist",
         "-o", str(diretorio / "%(title)s.%(ext)s"),
     ]
+
+    # ─── ffmpeg empacotado (instalador/dist) ──────────────────────────────
+    ffmpeg_dir = localizar_ffmpeg_dir()
+    if ffmpeg_dir:
+        cmd.extend(["--ffmpeg-location", str(ffmpeg_dir)])
 
     # ─── Configuracao por formato ──────────────────────────────────────────
     if formato == "mp3":
