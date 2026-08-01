@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-YouTube Downloader v1.0
+YouTube Downloader v1.1.0
 Baixe videos e audios do YouTube facilmente!
 """
 
@@ -108,7 +108,7 @@ def mostrar_banner():
     limpar_tela()
     print(f"""
   {c('+======================================+', Colors.BRIGHT_RED)}
-  {c('|', Colors.BRIGHT_RED)}     {c('YouTube Downloader v1.0', Colors.BRIGHT_WHITE + Colors.BOLD)}     {c('|', Colors.BRIGHT_RED)}
+  {c('|', Colors.BRIGHT_RED)}     {c('YouTube Downloader v1.1.0', Colors.BRIGHT_WHITE + Colors.BOLD)}     {c('|', Colors.BRIGHT_RED)}
   {c('|', Colors.BRIGHT_RED)}  {c('Baixe videos e audios do YouTube!', Colors.DIM)}  {c('|', Colors.BRIGHT_RED)}
   {c('+======================================+', Colors.BRIGHT_RED)}
     """)

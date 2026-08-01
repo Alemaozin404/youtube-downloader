@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-YouTube Downloader GUI v1.0
+YouTube Downloader GUI v1.1.0
 Interface grafica para baixar videos e audios do YouTube.
 """
 
@@ -105,7 +105,7 @@ class YouTubeDownloaderGUI:
 
     def __init__(self, root: Tk):
         self.root = root
-        self.root.title("YouTube Downloader v1.0")
+        self.root.title(f"YouTube Downloader v{APP_VERSION}")
         self.root.configure(bg=COR_FUNDO)
 
         # ─── Carrega configuracoes persistentes ───────────────────────────
@@ -358,7 +358,7 @@ class YouTubeDownloaderGUI:
               font=("Segoe UI", 18, "bold")).pack(side=LEFT, anchor="w")
 
         Label(conteudo,
-              text="v1.0",
+              text=f"v{APP_VERSION}",
               bg=COR_FUNDO2,
               fg=COR_TEXTO2,
               font=("Segoe UI", 10)).pack(side=LEFT, padx=(8, 0), anchor="w")

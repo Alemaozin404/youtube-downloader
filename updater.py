@@ -25,10 +25,14 @@ from dataclasses import dataclass
 from typing import Callable, Optional
 
 # Versao atual do app (mantenha sincronizada com config_manager / installer.iss)
-APP_VERSION = "1.0"
+APP_VERSION = "1.1.0"
 
-# URL padrao do servidor de atualizacoes (sobrescrita pela config do usuario)
-UPDATE_URL = "https://SEU-SERVIDOR.onrender.com"
+# URL padrao do servidor de atualizacoes.
+# Precedencia (a maior vence):
+#   1. Variavel de ambiente UPDATE_URL (util no build/instalacao/empacotamento)
+#   2. config.json do usuario -> chave update_url (tratada no config_manager)
+#   3. Este valor padrao: troque aqui pela URL definitiva ao publicar na Render
+UPDATE_URL = os.environ.get("UPDATE_URL", "https://SEU-SERVIDOR.onrender.com")
 
 _TIMEOUT_PADRAO = 15
 

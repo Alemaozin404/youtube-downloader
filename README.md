@@ -129,12 +129,24 @@ git push -u origin main
 
 ### 2. Configurar o app
 
-Edite `~/.youtube-downloader/config.json`:
+A URL do servidor é resolvida nesta ordem de precedência:
+
+1. **Variável de ambiente `UPDATE_URL`** (útil no build/empacotamento)
+2. **`config.json` do usuário** → chave `update_url`
+3. **Padrão no código** → `UPDATE_URL` em `updater.py` (troque aqui pela URL definitiva ao publicar)
+
+> Placeholders antigos (`https://SEU-SERVIDOR.onrender.com`) salvos no `config.json` são
+> tratados como "não configurado" e caem automaticamente no padrão atual.
+
+Para configurar via `config.json`, edite `~/.youtube-downloader/config.json` (formato real do arquivo):
 
 ```json
 {
-  "update_url": "https://seu-app.onrender.com",
-  "update_check_auto": true
+  "config": {
+    "update_url": "https://seu-app.onrender.com",
+    "update_check_auto": true
+  },
+  "history": []
 }
 ```
 

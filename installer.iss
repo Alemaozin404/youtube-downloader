@@ -8,7 +8,7 @@
 ;   ISCC.exe /DMyAppVersion=1.1.0 installer.iss
 ; (usado pelo pipeline release.py). Sem o parametro, usa o padrao abaixo.
 #ifndef MyAppVersion
-  #define MyAppVersion "1.0"
+  #define MyAppVersion "1.1.0"
 #endif
 
 #define MyAppPublisher "Freebuff"

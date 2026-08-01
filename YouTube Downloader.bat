@@ -1,5 +1,5 @@
 @echo off
-title YouTube Downloader v1.0
+title YouTube Downloader v1.1.0
 
 :: Configura o console para UTF-8 (suporte a acentos e caracteres especiais)
 chcp 65001 > nul
@@ -13,7 +13,7 @@ cls
 :: Exibe cabecalho
 echo.
 echo  +======================================+
-echo  ^|     YouTube Downloader v1.0          ^|
+echo  ^|     YouTube Downloader v1.1.0        ^|
 echo  ^|  Baixe videos e audios do YouTube!   ^|
 echo  +======================================+
 echo.

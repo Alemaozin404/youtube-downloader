@@ -19,7 +19,7 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 
 # ─── Valores padrao ─────────────────────────────────────────────────────────
 DEFAULT_CONFIG: Dict[str, Any] = {
-    "versao": "1.0",
+    "versao": "1.1.0",
     # ─── Sistema de atualizacoes ────────────────────────────────────
     "update_url": "https://SEU-SERVIDOR.onrender.com",
     "update_check_auto": True,          # Verifica atualizacao ao iniciar
@@ -216,11 +216,27 @@ class ConfigManager:
 
     @property
     def versao(self) -> str:
-        return self.config.get("versao", "1.0")
+        return self.config.get("versao", DEFAULT_CONFIG["versao"])
 
     def get_update_url(self) -> str:
-        """Retorna a URL do servidor de atualizacoes configurada."""
-        return self.config.get("update_url", "https://SEU-SERVIDOR.onrender.com").strip()
+        """Retorna a URL do servidor de atualizacoes configurada.
+
+        Precedencia:
+          1. Variavel de ambiente UPDATE_URL (lida ao vivo, a cada chamada)
+          2. config.json -> chave update_url (se nao for placeholder)
+          3. Padrao updater.UPDATE_URL (lido no import; util para build/empacotamento)
+
+        Placeholders antigos (https://SEU-SERVIDOR...) salvos no config.json
+        sao tratados como nao configurados e caem no padrao atual.
+        """
+        env_url = os.environ.get("UPDATE_URL", "").strip()
+        if env_url:
+            return env_url
+        from updater import UPDATE_URL as UPDATE_URL_PADRAO  # sem env, sem circular (updater so usa stdlib)
+        url = str(self.config.get("update_url", "")).strip()
+        if not url or url.startswith("https://SEU-SERVIDOR"):
+            return UPDATE_URL_PADRAO  # sem config ou placeholder antigo
+        return url
 
 
 # =============================================================================
