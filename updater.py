@@ -32,7 +32,7 @@ APP_VERSION = "1.1.0"
 #   1. Variavel de ambiente UPDATE_URL (util no build/instalacao/empacotamento)
 #   2. config.json do usuario -> chave update_url (tratada no config_manager)
 #   3. Este valor padrao: troque aqui pela URL definitiva ao publicar na Render
-UPDATE_URL = os.environ.get("UPDATE_URL", "https://SEU-SERVIDOR.onrender.com")
+UPDATE_URL = os.environ.get("UPDATE_URL", "https://youtube-downloader-updates.onrender.com")
 
 _TIMEOUT_PADRAO = 15
 

@@ -21,7 +21,7 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 DEFAULT_CONFIG: Dict[str, Any] = {
     "versao": "1.1.0",
     # ─── Sistema de atualizacoes ────────────────────────────────────
-    "update_url": "https://SEU-SERVIDOR.onrender.com",
+    "update_url": "https://youtube-downloader-updates.onrender.com",
     "update_check_auto": True,          # Verifica atualizacao ao iniciar
     "update_ignorada": "",             # Versao ignorada pelo usuario
     "diretorio_saida": str(Path.home() / "Downloads" / "YouTube Downloads"),
