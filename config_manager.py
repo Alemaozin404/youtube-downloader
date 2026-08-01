@@ -19,7 +19,7 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 
 # ─── Valores padrao ─────────────────────────────────────────────────────────
 DEFAULT_CONFIG: Dict[str, Any] = {
-    "versao": "1.2.0",
+    "versao": "1.3.0",
     # ─── Sistema de atualizacoes ────────────────────────────────────
     "update_url": "https://youtube-downloader-updates.onrender.com",
     "update_check_auto": True,          # Verifica atualizacao ao iniciar

@@ -5,10 +5,10 @@
 #define MyAppName "YouTube Downloader"
 
 ; Versao pode ser sobrescrita via linha de comando do ISCC:
-;   ISCC.exe /DMyAppVersion=1.2.0 installer.iss
+;   ISCC.exe /DMyAppVersion=1.3.0 installer.iss
 ; (usado pelo pipeline release.py). Sem o parametro, usa o padrao abaixo.
 #ifndef MyAppVersion
-  #define MyAppVersion "1.2.0"
+  #define MyAppVersion "1.3.0"
 #endif
 
 #define MyAppPublisher "Freebuff"

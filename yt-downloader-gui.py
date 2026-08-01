@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-YouTube Downloader GUI v1.2.0
+YouTube Downloader GUI v1.3.0
 Interface grafica para baixar videos e audios do YouTube.
 """
 
@@ -93,6 +93,11 @@ COR_ERRO = "#e74c3c"            # Vermelho
 COR_PROGRESSO = "#e74c3c"       # Barra progresso
 COR_PROGRESSO_BG = "#34495e"    # Fundo barra progresso
 
+# ─── Cores de navegacao ──────────────────────────────────────────────────────
+COR_NAV_FUNDO = "#101024"      # Fundo da barra de navegacao
+COR_NAV_ATIVO = "#e74c3c"      # Aba ativa
+COR_NAV_HOVER = "#2a2a4a"      # Hover da aba
+
 
 
 
@@ -172,6 +177,12 @@ class YouTubeDownloaderGUI:
         # ─── Inicializa drag & drop (Windows) ────────────────────────────
         self.root.after(100, self._iniciar_drop_handler)
 
+        # ─── Atalhos de teclado ───────────────────────────────────────────
+        self.root.bind("<Control-d>", lambda e: self.mostrar_pagina("download"))
+        self.root.bind("<Control-f>", lambda e: self._focar_pesquisa())
+        self.root.bind("<Control-Return>", lambda e: self.iniciar_download())
+        self.root.bind("<Control-l>", lambda e: self.limpar_tudo())
+
         # ─── Salva config ao fechar ───────────────────────────────────────
         self.root.protocol("WM_DELETE_WINDOW", self._ao_fechar)
 
@@ -228,13 +239,10 @@ class YouTubeDownloaderGUI:
         """Constroi todos os elementos da interface."""
         self.configurar_estilos()
         self.criar_cabecalho()
-        self.criar_frame_url()
-        self.criar_pesquisa_youtube()
-        self.criar_frame_info()
-        self.criar_frame_opcoes()
-        self.criar_frame_download()
-        self.criar_frame_log()
+        self.criar_nav()
+        self.criar_paginas()
         self.aplicar_bordas_cards()
+        self.mostrar_pagina("download")
 
     def configurar_estilos(self):
         """Configura estilos ttk para a interface."""
@@ -383,11 +391,108 @@ class YouTubeDownloaderGUI:
               fg=COR_TEXTO2,
               font=("Segoe UI", 10)).pack(side=RIGHT, anchor="e")
 
+    # ─── NAVEGACAO (abas) ───────────────────────────────────────────────────
+
+    def criar_nav(self):
+        """Cria a barra de navegacao com as abas principais."""
+        self.frame_nav = Frame(self.root, bg=COR_NAV_FUNDO)
+        self.frame_nav.pack(fill=X, pady=(0, 10))
+
+        self.botoes_nav = {}
+        # Texto puro (sem emoji) para garantir renderizacao em qualquer Windows
+        itens = [
+            ("download", "[ Download ]"),
+            ("pesquisar", "[ Pesquisar ]"),
+            ("fila", "[ Fila ]"),
+            ("historico", "[ Historico ]"),
+            ("sobre", "[ Sobre ]"),
+        ]
+
+        for chave, texto in itens:
+            btn = Button(
+                self.frame_nav,
+                text=texto,
+                command=lambda c=chave: self._acao_nav(c),
+                bg=COR_NAV_FUNDO,
+                fg=COR_TEXTO2,
+                font=("Segoe UI", 9, "bold"),
+                relief="flat",
+                bd=0,
+                padx=12,
+                pady=6,
+                cursor="hand2",
+                activebackground=COR_NAV_HOVER,
+                activeforeground="white",
+            )
+            btn.pack(side=LEFT, padx=(0, 6))
+            self.botoes_nav[chave] = btn
+
+    def _acao_nav(self, chave: str):
+        """Acao ao clicar em uma aba da navegacao."""
+        if chave == "fila":
+            self.abrir_fila()
+        elif chave == "historico":
+            self.abrir_historico()
+        else:
+            self.mostrar_pagina(chave)
+
+    def criar_paginas(self):
+        """Cria o container de paginas e constroi cada uma."""
+        self.container_paginas = Frame(self.root, bg=COR_FUNDO)
+        self.container_paginas.pack(fill=BOTH, expand=True)
+
+        self.paginas = {}
+
+        # ─── Pagina Download ──────────────────────────────────────────────
+        self.pagina_download = Frame(self.container_paginas, bg=COR_FUNDO)
+        self.paginas["download"] = self.pagina_download
+
+        # ─── Pagina Pesquisar ─────────────────────────────────────────────
+        self.pagina_pesquisa = Frame(self.container_paginas, bg=COR_FUNDO)
+        self.paginas["pesquisar"] = self.pagina_pesquisa
+
+        # ─── Pagina Sobre ─────────────────────────────────────────────────
+        self.pagina_sobre = Frame(self.container_paginas, bg=COR_FUNDO)
+        self.paginas["sobre"] = self.pagina_sobre
+
+        # Constroi o conteudo de cada pagina
+        self.criar_frame_url()
+        self.criar_pesquisa_youtube()
+        self.criar_frame_info()
+        self.criar_frame_opcoes()
+        self.criar_frame_download()
+        self.criar_frame_log()
+        self.criar_pagina_sobre()
+
+    def mostrar_pagina(self, nome: str):
+        """Mostra a pagina indicada e oculta as demais."""
+        for chave, pagina in self.paginas.items():
+            if chave == nome:
+                pagina.pack(fill=BOTH, expand=True)
+            else:
+                pagina.pack_forget()
+
+        # Atualiza o estilo das abas
+        for chave, btn in self.botoes_nav.items():
+            if chave == nome:
+                btn.config(bg=COR_NAV_ATIVO, fg="white")
+            else:
+                btn.config(bg=COR_NAV_FUNDO, fg=COR_TEXTO2)
+
+        # Status do ambiente sempre fresco ao abrir a pagina Sobre
+        if nome == "sobre":
+            self._atualizar_status_sobre()
+
+    def _focar_pesquisa(self):
+        """Foca o campo de pesquisa e abre a pagina."""
+        self.mostrar_pagina("pesquisar")
+        self.entry_pesquisa.focus_set()
+
     # ─── FRAME URL ──────────────────────────────────────────────────────────
 
     def criar_frame_url(self):
         """Cria o frame com campo de URL e botoes."""
-        frame = Frame(self.root, bg=COR_FUNDO)
+        frame = Frame(self.pagina_download, bg=COR_FUNDO)
         frame.pack(fill=X, padx=15, pady=(0, 10))
 
         # ─── Wrapper para borda pontilhada de drag & drop ────────────────
@@ -667,19 +772,16 @@ class YouTubeDownloaderGUI:
     # ─── PESQUISA INTEGRADA ─────────────────────────────────────────────────
 
     def criar_pesquisa_youtube(self):
-        """Adiciona campo de busca do YouTube no frame URL."""
-        # Frame de busca (logo apos o frame URL)
-        self.frame_pesquisa = Frame(self.root, bg=COR_FUNDO)
-        self.frame_pesquisa.pack(fill=X, padx=15, pady=(0, 10))
-
-        card = Frame(self.frame_pesquisa, bg=COR_CARD, relief="flat", bd=0)
-        card.pack(fill=X)
+        """Constroi a pagina de pesquisa do YouTube com resultados inline."""
+        # ─── Card de busca ────────────────────────────────────────────────
+        card = Frame(self.pagina_pesquisa, bg=COR_CARD, relief="flat", bd=0)
+        card.pack(fill=X, padx=15, pady=(0, 10))
         self.aplicar_borda_card(card)
 
         conteudo = Frame(card, bg=COR_CARD)
         conteudo.pack(fill=X, padx=15, pady=10)
 
-        # ─── Linha 1: Rotulo + campo de busca ─────────────────────────────
+        # Linha 1: Rotulo + campo de busca
         linha_busca = Frame(conteudo, bg=COR_CARD)
         linha_busca.pack(fill=X)
 
@@ -717,15 +819,49 @@ class YouTubeDownloaderGUI:
                                      activeforeground="white")
         self.btn_pesquisar.pack(side=LEFT)
 
-        # ─── Linha 2: Dica e atalho ───────────────────────────────────────
-        linha_dica = Frame(conteudo, bg=COR_CARD)
-        linha_dica.pack(fill=X, pady=(4, 0))
-
-        Label(linha_dica,
+        Label(conteudo,
               text="Digite o que deseja buscar. Ex: 'musica relaxante 2024' ou 'curso python'",
               bg=COR_CARD,
               fg=COR_TEXTO2,
-              font=("Segoe UI", 8)).pack(anchor="w")
+              font=("Segoe UI", 8)).pack(anchor="w", pady=(4, 0))
+
+        # ─── Card de resultados (inline) ──────────────────────────────────
+        card_res = Frame(self.pagina_pesquisa, bg=COR_CARD, relief="flat", bd=0)
+        card_res.pack(fill=BOTH, expand=True, padx=15, pady=(0, 15))
+        self.aplicar_borda_card(card_res)
+
+        conteudo_res = Frame(card_res, bg=COR_CARD)
+        conteudo_res.pack(fill=BOTH, expand=True, padx=10, pady=10)
+
+        self.label_resultado_total = Label(conteudo_res,
+                                           text="",
+                                           bg=COR_CARD,
+                                           fg=COR_TEXTO2,
+                                           font=("Segoe UI", 9, "bold"))
+        self.label_resultado_total.pack(anchor="w", pady=(0, 6))
+
+        frame_lista = Frame(conteudo_res, bg=COR_FUNDO2, bd=0,
+                            highlightthickness=1, highlightbackground=COR_CARD)
+        frame_lista.pack(fill=BOTH, expand=True)
+
+        self.canvas_resultados = Canvas(frame_lista, bg=COR_FUNDO2, highlightthickness=0)
+        scroll = Scrollbar(frame_lista, orient=VERTICAL, command=self.canvas_resultados.yview)
+        scroll.pack(side=RIGHT, fill=Y)
+        self.canvas_resultados.pack(side=LEFT, fill=BOTH, expand=True)
+        self.canvas_resultados.configure(yscrollcommand=scroll.set)
+
+        self.frame_resultados = Frame(self.canvas_resultados, bg=COR_FUNDO2)
+        self._resultados_window_id = self.canvas_resultados.create_window(
+            (0, 0), window=self.frame_resultados, anchor="nw")
+
+        def _config_scroll(event):
+            self.canvas_resultados.configure(
+                scrollregion=self.canvas_resultados.bbox("all"))
+            self.canvas_resultados.itemconfig(
+                self._resultados_window_id,
+                width=self.canvas_resultados.winfo_width())
+
+        self.frame_resultados.bind("<Configure>", _config_scroll)
 
     def pesquisar_youtube(self):
         """Executa pesquisa no YouTube via yt-dlp e mostra resultados."""
@@ -793,7 +929,7 @@ class YouTubeDownloaderGUI:
                                   bg=COR_PRIMARIA, activebackground=COR_PRIMARIA2)
 
     def _mostrar_resultados_pesquisa(self, resultados: list):
-        """Exibe janela com resultados da pesquisa."""
+        """Exibe os resultados da pesquisa na propria pagina (inline)."""
         self._restaurar_botao_pesquisa()
 
         if not resultados:
@@ -802,62 +938,21 @@ class YouTubeDownloaderGUI:
 
         self.adicionar_log(f"Encontrados {len(resultados)} resultados.", COR_SUCESSO)
 
-        # ─── Janela de resultados ─────────────────────────────────────────
-        win = Toplevel(self.root)
-        win.title("Resultados da Pesquisa")
-        win.configure(bg=COR_FUNDO)
-        win.minsize(650, 400)
-        win.geometry("750x550")
-        win.transient(self.root)
-        win.grab_set()
+        # Garante que a pagina de pesquisa esteja visivel
+        self.mostrar_pagina("pesquisar")
 
-        # Topo
-        frame_top = Frame(win, bg=COR_FUNDO2)
-        frame_top.pack(fill=X, padx=10, pady=10)
+        # Limpa resultados anteriores
+        for w in self.frame_resultados.winfo_children():
+            w.destroy()
 
-        Label(frame_top,
-              text="Resultados da Pesquisa",
-              bg=COR_FUNDO2,
-              fg=COR_TEXTO,
-              font=("Segoe UI", 14, "bold")).pack(side=LEFT)
-
-        Label(frame_top,
-              text=f"{len(resultados)} videos",
-              bg=COR_FUNDO2,
-              fg=COR_TEXTO2,
-              font=("Segoe UI", 9)).pack(side=LEFT, padx=(10, 0))
-
-        # Instrucao
-        Label(frame_top,
-              text="Clique em um video para carregar",
-              bg=COR_FUNDO2,
-              fg=COR_TEXTO2,
-              font=("Segoe UI", 8)).pack(side=RIGHT)
-
-        # Lista de resultados
-        frame_lista = Frame(win, bg=COR_CARD, relief="flat", bd=0)
-        frame_lista.pack(fill=BOTH, expand=True, padx=10, pady=(0, 10))
-
-        canvas = Canvas(frame_lista, bg=COR_CARD, highlightthickness=0)
-        scroll = Scrollbar(frame_lista, orient=VERTICAL, command=canvas.yview)
-        scroll.pack(side=RIGHT, fill=Y)
-        canvas.pack(side=LEFT, fill=BOTH, expand=True)
-        canvas.configure(yscrollcommand=scroll.set)
-
-        frame_itens = Frame(canvas, bg=COR_CARD)
-        canvas.create_window((0, 0), window=frame_itens, anchor="nw", width=canvas.winfo_reqwidth)
-
-        def _config_scroll(event):
-            canvas.configure(scrollregion=canvas.bbox("all"))
-            canvas.itemconfig(1, width=canvas.winfo_width())
-
-        frame_itens.bind("<Configure>", _config_scroll)
+        self.label_resultado_total.config(
+            text=f"{len(resultados)} videos encontrados")
 
         # Cria itens da lista
         for i, info in enumerate(resultados):
-            self._criar_item_resultado(frame_itens, info, i, win)
+            self._criar_item_resultado(self.frame_resultados, info, i)
 
-    def _criar_item_resultado(self, parent, info: dict, index: int, win: Toplevel):
+    def _criar_item_resultado(self, parent, info: dict, index: int):
         """Cria um item visual na lista de resultados."""
         item = Frame(parent, bg=COR_FUNDO2, relief="flat", bd=0,
                      highlightthickness=1, highlightbackground=COR_CARD)
@@ -878,7 +973,7 @@ class YouTubeDownloaderGUI:
             if url:
                 self.entry_url.delete(0, END)
                 self.entry_url.insert(0, url)
-                win.destroy()
+                self.mostrar_pagina("download")
                 self.buscar_info()
 
         item.bind("<Button-1>", _carregar_video)
@@ -940,7 +1035,7 @@ class YouTubeDownloaderGUI:
 
     def criar_frame_info(self):
         """Cria o frame com informacoes do video e thumbnail."""
-        self.frame_info = Frame(self.root, bg=COR_FUNDO)
+        self.frame_info = Frame(self.pagina_download, bg=COR_FUNDO)
         self.frame_info.pack(fill=X, padx=15, pady=(0, 10))
 
         card = Frame(self.frame_info, bg=COR_CARD, relief="flat", bd=0)
@@ -1007,9 +1102,11 @@ class YouTubeDownloaderGUI:
             ("data", "Publicado em:"),
         ]
 
+        self.info_frames = {}
         for chave, rotulo in campos:
+            # Frame contenedor (mantido p/ pack/forget sem deixar espacos vazios)
             frame = Frame(self.frame_info_texto, bg=COR_CARD)
-            frame.pack(fill=X, pady=2)
+            self.info_frames[chave] = frame
 
             # Valor exibido
             label_valor = Label(frame,
@@ -1029,11 +1126,14 @@ class YouTubeDownloaderGUI:
 
     def mostrar_ocultar_info(self, mostrar: bool):
         """Mostra ou oculta os labels de informacao e thumbnail."""
-        for widget in self.info_widgets.values():
+        for chave, widget in self.info_widgets.items():
+            frame = self.info_frames.get(chave)
             if mostrar:
-                widget.pack(fill=X, pady=2)
+                frame.pack(fill=X, pady=2)
+                widget.pack(fill=X)
             else:
                 widget.pack_forget()
+                frame.pack_forget()
 
         if mostrar:
             self.label_placeholder.pack_forget()
@@ -1132,7 +1232,7 @@ class YouTubeDownloaderGUI:
 
     def criar_frame_opcoes(self):
         """Cria o frame com opcoes de formato, qualidade e diretorio."""
-        frame = Frame(self.root, bg=COR_FUNDO)
+        frame = Frame(self.pagina_download, bg=COR_FUNDO)
         frame.pack(fill=X, padx=15, pady=(0, 10))
 
         card = Frame(frame, bg=COR_CARD, relief="flat", bd=0)
@@ -2292,7 +2392,7 @@ $toast = [Windows.UI.Notifications.ToastNotification]::New($template)
 
     def criar_frame_download(self):
         """Cria o frame com botao de download e barra de progresso."""
-        frame = Frame(self.root, bg=COR_FUNDO)
+        frame = Frame(self.pagina_download, bg=COR_FUNDO)
         frame.pack(fill=X, padx=15, pady=(0, 10))
 
         card = Frame(frame, bg=COR_CARD, relief="flat", bd=0)
@@ -2374,7 +2474,7 @@ $toast = [Windows.UI.Notifications.ToastNotification]::New($template)
         """Cria o frame com area de log."""
         self._log_tags_cache: set = set()  # Cache de tags configuradas
 
-        frame = Frame(self.root, bg=COR_FUNDO)
+        frame = Frame(self.pagina_download, bg=COR_FUNDO)
         frame.pack(fill=BOTH, expand=True, padx=15, pady=(0, 15))
 
         card = Frame(frame, bg=COR_CARD, relief="flat", bd=0)
@@ -2417,6 +2517,172 @@ $toast = [Windows.UI.Notifications.ToastNotification]::New($template)
                                troughcolor=COR_FUNDO2)
         scroll_log.pack(side=RIGHT, fill=Y)
         self.text_log.config(yscrollcommand=scroll_log.set)
+
+    # ─── PAGINA SOBRE ───────────────────────────────────────────────────────
+
+    def criar_pagina_sobre(self):
+        """Constroi a pagina 'Sobre' com informacoes do app."""
+        # ─── Card: sobre o app ────────────────────────────────────────────
+        card = Frame(self.pagina_sobre, bg=COR_CARD, relief="flat", bd=0)
+        card.pack(fill=X, padx=15, pady=(0, 10))
+        self.aplicar_borda_card(card)
+
+        conteudo = Frame(card, bg=COR_CARD)
+        conteudo.pack(fill=X, padx=15, pady=12)
+
+        Label(conteudo,
+              text="Sobre o YouTube Downloader",
+              bg=COR_CARD,
+              fg=COR_TEXTO,
+              font=("Segoe UI", 13, "bold")).pack(anchor="w")
+
+        Label(conteudo,
+              text=f"Versao {APP_VERSION} - Baixe videos e audios do YouTube e de dezenas de outras plataformas, gratuitamente.",
+              bg=COR_CARD,
+              fg=COR_TEXTO2,
+              font=("Segoe UI", 9),
+              wraplength=650,
+              justify=LEFT).pack(anchor="w", pady=(6, 0))
+
+        # ─── Card: status do ambiente ─────────────────────────────────────
+        card2 = Frame(self.pagina_sobre, bg=COR_CARD, relief="flat", bd=0)
+        card2.pack(fill=X, padx=15, pady=(0, 10))
+        self.aplicar_borda_card(card2)
+
+        conteudo2 = Frame(card2, bg=COR_CARD)
+        conteudo2.pack(fill=X, padx=15, pady=12)
+
+        Label(conteudo2,
+              text="Status do ambiente",
+              bg=COR_CARD,
+              fg=COR_TEXTO,
+              font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 6))
+
+        self._status_sobre_labels = {}
+        status_itens = [
+            ("yt-dlp", "ytdlp"),
+            ("ffmpeg", "ffmpeg"),
+            ("Pillow (thumbnails)", "pillow"),
+            ("Drag & drop (Windows)", "drop"),
+        ]
+        for nome, chave in status_itens:
+            linha = Frame(conteudo2, bg=COR_CARD)
+            linha.pack(fill=X, pady=2)
+            Label(linha,
+                  text=nome,
+                  bg=COR_CARD,
+                  fg=COR_TEXTO2,
+                  font=("Segoe UI", 9),
+                  width=24,
+                  anchor="w").pack(side=LEFT)
+            lbl = Label(linha,
+                        text="...",
+                        bg=COR_CARD,
+                        fg=COR_TEXTO2,
+                        font=("Segoe UI", 9, "bold"))
+            lbl.pack(side=LEFT)
+            self._status_sobre_labels[chave] = lbl
+
+        # ─── Card: atalhos de teclado ─────────────────────────────────────
+        card3 = Frame(self.pagina_sobre, bg=COR_CARD, relief="flat", bd=0)
+        card3.pack(fill=X, padx=15, pady=(0, 10))
+        self.aplicar_borda_card(card3)
+
+        conteudo3 = Frame(card3, bg=COR_CARD)
+        conteudo3.pack(fill=X, padx=15, pady=12)
+
+        Label(conteudo3,
+              text="Atalhos de teclado",
+              bg=COR_CARD,
+              fg=COR_TEXTO,
+              font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 6))
+
+        atalhos = [
+            ("Ctrl + D", "Voltar para a pagina Download"),
+            ("Ctrl + F", "Ir para a pesquisa do YouTube"),
+            ("Ctrl + Enter", "Iniciar download"),
+            ("Ctrl + L", "Limpar tudo"),
+            ("Enter (no campo URL)", "Buscar informacoes"),
+            ("Clique direito (campo URL)", "Colar / Limpar"),
+        ]
+        for tecla, desc in atalhos:
+            linha = Frame(conteudo3, bg=COR_CARD)
+            linha.pack(fill=X, pady=2)
+            Label(linha,
+                  text=tecla,
+                  bg=COR_CARD,
+                  fg=COR_SECUNDARIA,
+                  font=("Segoe UI", 9, "bold"),
+                  width=18,
+                  anchor="w").pack(side=LEFT)
+            Label(linha,
+                  text=desc,
+                  bg=COR_CARD,
+                  fg=COR_TEXTO2,
+                  font=("Segoe UI", 9),
+                  anchor="w").pack(side=LEFT)
+
+        # ─── Botoes de acao ───────────────────────────────────────────────
+        frame_botoes = Frame(self.pagina_sobre, bg=COR_FUNDO)
+        frame_botoes.pack(fill=X, padx=15)
+
+        Button(frame_botoes,
+               text="Verificar Atualizacao",
+               command=self.verificar_atualizacao_app,
+               bg=COR_SECUNDARIA,
+               fg="white",
+               font=("Segoe UI", 9, "bold"),
+               relief="flat",
+               bd=0,
+               padx=12,
+               pady=8,
+               cursor="hand2",
+               activebackground="#2980b9",
+               activeforeground="white").pack(side=LEFT, padx=(0, 6))
+
+        Button(frame_botoes,
+               text="Atualizar yt-dlp",
+               command=self.atualizar_ytdlp,
+               bg="#8e44ad",
+               fg="white",
+               font=("Segoe UI", 9),
+               relief="flat",
+               bd=0,
+               padx=12,
+               pady=8,
+               cursor="hand2",
+               activebackground="#9b59b6",
+               activeforeground="white").pack(side=LEFT, padx=(0, 6))
+
+        Button(frame_botoes,
+               text="Abrir pasta de downloads",
+               command=self.abrir_pasta,
+               bg="#5d6d7e",
+               fg="white",
+               font=("Segoe UI", 9),
+               relief="flat",
+               bd=0,
+               padx=12,
+               pady=8,
+               cursor="hand2",
+               activebackground="#707b8c",
+               activeforeground="white").pack(side=LEFT)
+
+    def _atualizar_status_sobre(self):
+        """Atualiza os indicadores de ambiente da pagina Sobre (lazy)."""
+        valores = {
+            "ytdlp": verificar_ytdlp(),
+            "ffmpeg": verificar_ffmpeg(),
+            "pillow": HAS_PIL,
+            "drop": HAS_DROP_HANDLER,
+        }
+        for chave, ok in valores.items():
+            lbl = self._status_sobre_labels.get(chave)
+            if lbl:
+                lbl.config(
+                    text="OK" if ok else "Faltando",
+                    fg=COR_SUCESSO if ok else COR_ERRO,
+                )
 
     # =========================================================================
     # LOGICA PRINCIPAL
@@ -2610,15 +2876,26 @@ $toast = [Windows.UI.Notifications.ToastNotification]::New($template)
             messagebox.showinfo("Atualizar yt-dlp", msg)
         else:
             messagebox.showwarning("Atualizar yt-dlp", msg)
+        # Mantem o status da pagina Sobre atualizado apos a atualizacao
+        if hasattr(self, "_status_sobre_labels"):
+            self._atualizar_status_sobre()
 
     def limpar_tudo(self):
-        """Limpa URL, informacoes, thumbnail e log."""
+        """Limpa URL, informacoes, thumbnail, pesquisa e log."""
         self.entry_url.delete(0, END)
         self.info_video = None
         self.remover_thumbnail()
         self.mostrar_ocultar_info(False)
         self.progress_var.set(0)
         self.label_progresso.config(text="0%")
+        # Limpa estado da pesquisa (se ja criada)
+        if hasattr(self, "entry_pesquisa"):
+            self.entry_pesquisa.delete(0, END)
+        if hasattr(self, "frame_resultados"):
+            for w in self.frame_resultados.winfo_children():
+                w.destroy()
+        if hasattr(self, "label_resultado_total"):
+            self.label_resultado_total.config(text="")
         self.text_log.config(state="normal")
         self.text_log.delete(1.0, END)
         self.text_log.config(state="disabled")
@@ -2779,6 +3056,7 @@ $toast = [Windows.UI.Notifications.ToastNotification]::New($template)
                 errors="replace"
             )
 
+            ultimo_pct = -1.0
             for linha in processo.stdout:
                 if not self.processando:
                     cancelado = True
@@ -2804,7 +3082,11 @@ $toast = [Windows.UI.Notifications.ToastNotification]::New($template)
                         m_eta = re.search(r"ETA\s+(\d{1,2}:\d{2})", linha)
                         if m_eta:
                             eta = m_eta.group(1)
-                        self.root.after(0, lambda v=pct, vd=velocidade, et=eta: self.atualizar_progresso(v, vd, et))
+                        # Throttling: so atualiza a UI quando o percentual mudar
+                        # de forma significativa (evita travar com milhares de updates)
+                        if pct - ultimo_pct >= 0.5 or pct >= 100:
+                            ultimo_pct = pct
+                            self.root.after(0, lambda v=pct, vd=velocidade, et=eta: self.atualizar_progresso(v, vd, et))
                 elif "has already been downloaded" in linha.lower():
                     self.adicionar_log("Arquivo ja existe. Pulando...", COR_AVISO)
                 elif "[download]" in linha and "100%" in linha:

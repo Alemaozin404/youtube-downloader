@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from typing import Callable, Optional
 
 # Versao atual do app (mantenha sincronizada com config_manager / installer.iss)
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.3.0"
 
 # URL padrao do servidor de atualizacoes.
 # Precedencia (a maior vence):
