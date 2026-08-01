@@ -64,6 +64,7 @@ from updater import (
     verificar_atualizacao,
     baixar_instalador,
     verificar_sha256,
+    verificar_assinatura_instalador,
     executar_instalador,
     caminho_instalador_temp,
     AtualizacaoInfo,
@@ -3460,6 +3461,17 @@ $toast = [Windows.UI.Notifications.ToastNotification]::New($template)
                 if info.platform.sha256 and not verificar_sha256(destino, info.platform.sha256):
                     raise RuntimeError(
                         "Verificacao SHA-256 falhou. Arquivo corrompido?"
+                    )
+                # Verifica a assinatura digital Ed25519 (autenticidade)
+                resultado_sig = verificar_assinatura_instalador(destino, info.platform)
+                if resultado_sig == "invalida":
+                    raise RuntimeError(
+                        "Assinatura digital INVALIDA. O instalador pode ter sido adulterado!"
+                    )
+                if resultado_sig == "sem_assinatura":
+                    self.adicionar_log(
+                        "Aviso: esta versao nao possui assinatura digital (modo legado).",
+                        COR_AVISO,
                     )
                 self.root.after(0, self._instalador_baixado, info, win, destino)
             except Exception as e:
