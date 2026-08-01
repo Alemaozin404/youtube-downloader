@@ -2,6 +2,23 @@
   "app": "YouTube Downloader",
   "releases": [
     {
+      "version": "1.2.0",
+      "min_required_version": "1.0",
+      "published_at": "2026-08-01T15:09:55.017578+00:00",
+      "notes": "Correcao: ffmpeg agora empacotado no instalador (mescla video+audio e MP3 funcionam sem instalacao extra)",
+      "release_page": "https://github.com/Alemaozin404/youtube-downloader/releases/tag/v1.2.0",
+      "mandatory": false,
+      "platforms": {
+        "windows": {
+          "url": "https://github.com/Alemaozin404/youtube-downloader/releases/download/v1.2.0/YouTube-Downloader-Setup-1.2.0.exe",
+          "sha256": "4854fafdef5cff3a2ba7da0587f8a0f615172002f1171c90339e9f620244e560",
+          "size": 0,
+          "filename": "YouTube-Downloader-Setup-1.2.0.exe",
+          "signature": "Qohq+N0qNQNLVfuPwechk0vF5fj2vSfihFoqR2FCavx0G37/o2/9q5kP7Nwg91xbmmORs6ytfycZkarzNxLFCw=="
+        }
+      }
+    },
+    {
       "version": "1.1.0",
       "min_required_version": "1.0",
       "published_at": "2026-08-01T14:45:45.603970+00:00",
