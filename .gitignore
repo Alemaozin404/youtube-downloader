@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Build (PyInstaller / Inno Setup)
+build/
+dist/
+installer/
+*.spec
+*.log
+
+# Ambiente
+.env
+.venv/
+venv/
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Debug / temporarios
+output.txt
+
+# Chave privada do sistema de atualizacoes (NUNCA commitar!)
+update_private.pem
+update_public.pem

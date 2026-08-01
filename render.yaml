@@ -1,0 +1,23 @@
+# render.yaml — Blueprint para deploy do Servidor de Atualizacoes na Render
+# Uso: suba este repositorio no GitHub e em https://render.com crie um
+# "Blueprint" apontando para o repositorio. A Render le este arquivo.
+#
+# Alternativa manual: New > Web Service > seu repositorio
+#   - Environment: Python 3
+#   - Build Command:  pip install -r server/requirements.txt
+#   - Start Command:  uvicorn server.app:app --host 0.0.0.0 --port $PORT
+#   - Env Var:        ADMIN_TOKEN=<gere um token secreto>
+
+services:
+  - type: web
+    name: youtube-downloader-updates
+    runtime: python
+    plan: free
+    autoDeploy: true
+    buildCommand: pip install -r server/requirements.txt
+    startCommand: uvicorn server.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: ADMIN_TOKEN
+        generateValue: true
+        sync: false

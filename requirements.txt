@@ -1,0 +1,19 @@
+# =============================================================================
+# YouTube Downloader - Dependencias
+# =============================================================================
+# Instale com: pip install -r requirements.txt
+
+# yt-dlp - Engine de download de videos (YouTube e outras plataformas)
+yt-dlp>=2024.0.0
+
+# colorama - Cores no terminal (CLI mode)
+colorama>=0.4.6
+
+# Pillow - Exibicao de thumbnails na interface grafica
+pillow>=10.0.0
+
+# cryptography - Assinatura digital das atualizacoes (Ed25519)
+cryptography>=41.0
+
+# PyInstaller - Para gerar executavel .exe (opcional)
+# pyinstaller>=6.0.0
